@@ -9,16 +9,17 @@ pip install -e . # install package itself
 For available commands and config parameters run
 
 ```
-fake-students --help
+graph-data --help
 ```
 
-##### Generate multiple students batches into given directory
-```
-fake-students --output_dir /tmp/gd/fakes/ dump
-```
-
-##### Generate single students batch
+**Generate 200 students in a single batch to stdout** 
 
 ```
-fake-students batch
+graph-data --batch_size 200 batch
 ```
+
+**Generate 500 batches, each containing 200 students into `/tmp/dump` directory**
+```
+graph-data --batches 500 -- --batch_size 200 --output_dir /tmp/dump dump
+```
+

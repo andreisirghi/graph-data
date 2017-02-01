@@ -65,9 +65,22 @@ def generate_student():
 
 def random_date_enrolled(dob):
     date = datetime.datetime.now()
+    date = date.replace(day=random.choice(range(1, 28)))
     date = date.replace(month=random.choice(range(6, 10)))
     date = date.replace(year=random.choice(range(dob.year + 19, date.year)))
     return date
+
+
+def pick_friends(student_ids):
+    if len(student_ids) < 50:
+        return []
+    else:
+        friends = []
+        friends_nr = random.choice(range(5, 20))
+        while friends_nr:
+            friends.append(random.choice(student_ids))
+            friends_nr -= 1
+        return friends
 
 
 def random_university():

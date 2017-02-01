@@ -20,7 +20,7 @@ setup(
     install_requires=install_requires,
     entry_points={
         'console_scripts': [
-            'fake-students= graph_data.cli:main',
+            'graph-data= graph_data.cli:main',
         ],
     }
 )
