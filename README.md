@@ -20,6 +20,6 @@ graph-data --batch_size 200 batch
 
 **Generate 500 batches, each containing 200 students into `/tmp/dump` directory**
 ```
-graph-data --batches 500 -- --batch_size 200 --output_dir /tmp/dump dump
+graph-data --batches 500 --batch_size 200 --output_dir /tmp/dump dump
 ```
 
