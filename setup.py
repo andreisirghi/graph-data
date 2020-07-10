@@ -15,7 +15,7 @@ with open(here('requirements.txt')) as fp:
 
 setup(
     name='graph-data',
-    version='0.1.0a0',
+    version='0.2.0a0',
     packages=find_packages(),
     install_requires=install_requires,
     entry_points={
