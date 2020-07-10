@@ -22,7 +22,7 @@ Q_IN_STUDENTS = """
     FOREACH (characteristic in student.characteristics |
       MERGE (ch:Characteristic {id:characteristic.type+':'+characteristic.value})
         ON CREATE SET ch.type=characteristic.type, ch.value=characteristic.value
-      MERGE (s)-[:charasteristic]->(ch)
+      MERGE (s)-[:characteristic]->(ch)
     )
     FOREACH (fr in student.friends |
       MERGE (t:Student {idno:fr})
@@ -44,7 +44,7 @@ def do_query_update(query, params={}):
             'includeStats': True
         }]
     }
-    query_request = json.dumps(query_request).encode('utf-8')
+    query_request = json.dumps(query_request).encode()
     response = requests.post(url, data=query_request)
     raise_for_update_errors(response)
     return response
@@ -69,7 +69,7 @@ def do_query_update_batch(queries):
         'statements': statements
     }
 
-    query_request = json.dumps(query_request).encode('utf-8')
+    query_request = json.dumps(query_request).encode()
     response = requests.post(url, data=query_request)
     raise_for_update_errors(response)
     return response
