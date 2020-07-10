@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+import csv
 import json
 import logging
 import sys
@@ -21,6 +21,7 @@ PRETTY_JSON_KWARGS = dict(
     indent=2,
     sort_keys=True)
 
+TMP_DIR = "/tmp"
 logger = structlog.get_logger(__name__)
 fake = Factory.create('en_US')
 
@@ -195,3 +196,94 @@ def neo4j_load_dump_json(ctx):
             neo4j.log_update_query_stats(end_time-start_time, rs)
 
     logger.info('neo4j.json.ingest.done')
+
+
+@cli.command(help="Loads a dump of generated data into neo4j in CSV mode")
+@click.pass_context
+def neo4j_load_dump_csv(ctx):
+    neo4j.ctx = ctx.obj
+    neo4j.create_schema()
+    logger.info('neo4j.csv.ingest.start', folder=ctx.obj.output_dir)
+
+    csv.register_dialect(
+        "gdata", quotechar='"',
+        quoting=csv.QUOTE_NONNUMERIC,
+        doublequote=True,
+    )
+    batch_files = [f for f in listdir(ctx.obj.output_dir)
+                   if isfile(join(ctx.obj.output_dir, f))
+                   and f.endswith('.json')]
+
+    student_ids = []
+    for file in batch_files:
+        with open(join(ctx.obj.output_dir, file), mode='r',
+                  encoding='utf-8') as input:
+            (students_csv_buffer,
+             students_csv_writer,
+             characteristics_csv_buffer,
+             characteristics_csv_writer,
+             friends_csv_buffer,
+             friends_csv_writer) = new_csv_writters()
+            json_data = json.load(input)
+            for item in json_data['data']:
+                students_csv_writer.writerow(
+                    generator.get_student_as_csv_row(item))
+                characteristics_csv_writer.writerows(
+                    generator.get_student_characteristic_rows(item))
+
+                student_ids.append(item['idno'])
+                friends = generator.pick_friends(student_ids)
+                friends = [f for f in friends if f != item['idno']]
+                for friend_idno in friends:
+                    friends_csv_writer.writerow((item['idno'], friend_idno))
+
+            pref = file[:-4]
+            with open(f'{TMP_DIR}/{pref}_students.csv', 'w+') as f:
+                f.write(students_csv_buffer.getvalue())
+            with open(f'{TMP_DIR}/{pref}_characteristics.csv', 'w+') as f:
+                f.write(characteristics_csv_buffer.getvalue())
+            with open(f'{TMP_DIR}/{pref}_friends.csv', 'w+') as f:
+                f.write(friends_csv_buffer.getvalue())
+
+            start_time = datetime.now()
+            logger.info('neo4j.csv.ingest.batch', file=pref)
+            queries = []
+            csv_load_phases = {
+                'students': neo4j.Q_IN_CSV_STUDENTS,
+                'characteristics': neo4j.Q_IN_CSV_CHARACTERISTICS,
+                'friends': neo4j.Q_IN_CSV_FRIENDS
+            }
+            for phase in csv_load_phases.keys():
+                queries.append({
+                    'statement': csv_load_phases[phase].format(
+                        file=f"{TMP_DIR}/{pref}_{phase}.csv"),
+                    'params': {}})
+            rs = neo4j.do_query_update_batch(queries)
+            end_time = datetime.now()
+            neo4j.log_update_query_stats(end_time - start_time, rs)
+
+    logger.info('neo4j.csv.ingest.done')
+
+
+def new_csv_writters():
+    dialect = csv.get_dialect("gdata")
+    students_csv_buffer = io.StringIO()
+    characteristics_csv_buffer = io.StringIO()
+    friends_csv_buffer = io.StringIO()
+    students_csv_writer = csv.writer(
+        students_csv_buffer, dialect=dialect)
+    characteristics_csv_writer = csv.writer(
+        characteristics_csv_buffer, dialect=dialect)
+    friends_csv_writer = csv.writer(
+        friends_csv_buffer, dialect=dialect)
+    # add headers
+    students_csv_writer.writerow(
+        generator.get_student_csv_header())
+    characteristics_csv_writer.writerow(
+        generator.get_student_characteristic_csv_header()
+    )
+    friends_csv_writer.writerow(('idno', 'friend_idno'))
+    return (
+        students_csv_buffer, students_csv_writer,
+        characteristics_csv_buffer, characteristics_csv_writer,
+        friends_csv_buffer, friends_csv_writer)

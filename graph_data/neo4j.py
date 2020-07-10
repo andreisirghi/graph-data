@@ -30,6 +30,37 @@ Q_IN_STUDENTS = """
     )
     """
 
+Q_IN_CSV_STUDENTS = """
+    LOAD CSV WITH HEADERS FROM 'file://{file}' AS line
+    MERGE (s:Student {{idno:line.idno}})
+    SET 
+        s.name = line.name, 
+        s.description = line.description, 
+        s.phone = line.phone, 
+        s.country = line.country, 
+        s.city = line.city, 
+        s.address = line.address, 
+        s.university = line.university, 
+        s.faculty = line.faculty, 
+        s.date_of_birth = line.date_of_birth, 
+        s.date_enrolled = line.date_enrolled 
+    """
+
+Q_IN_CSV_CHARACTERISTICS = """
+    LOAD CSV WITH HEADERS FROM 'file://{file}' AS line
+    MERGE (s:Student {{idno:line.idno}})
+    MERGE (ch:Characteristic {{id:line.type+':'+line.value}})
+    ON CREATE SET ch.type=line.type, ch.value=line.value
+      MERGE (s)-[:characteristic]->(ch)
+    """
+
+Q_IN_CSV_FRIENDS = """
+    LOAD CSV WITH HEADERS FROM 'file://{file}' AS line
+    MERGE (s:Student {{idno:line.idno}})
+    MERGE (fr:Student {{idno:line.friend_idno}})
+    MERGE (s)-[:friend]->(ch)
+    """
+
 
 def do_query_update(query, params={}):
     """

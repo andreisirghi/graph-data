@@ -18,6 +18,53 @@ CHARACTERISTIC_TYPES = (
 )
 
 
+def get_student_csv_header():
+    return ('idno',
+            'name',
+            'description',
+            'phone',
+            'country',
+            'city',
+            'address',
+            'university',
+            'faculty',
+            'date_of_birth',
+            'date_enrolled',
+            )
+
+
+def get_student_characteristic_csv_header():
+    return ('idno',
+            'type',
+            'value',
+            )
+
+
+def get_student_as_csv_row(student: dict):
+    return (student['idno'],
+            student['name'],
+            student['description'],
+            student['phone'],
+            student['country'],
+            student['city'],
+            student['address'],
+            student['university'],
+            student['faculty'],
+            student['date_of_birth'],
+            student['date_enrolled'],)
+
+
+def get_student_characteristic_rows(student: dict):
+    result = []
+    for characteristic in student['characteristics']:
+        result.append((
+            student['idno'],
+            characteristic['type'],
+            characteristic['value'],
+        ))
+    return result
+
+
 def generate_student():
     date_of_birth = fake.date_time_between(start_date='-45y', end_date='-22y')
     street_name = fake.street_name()
