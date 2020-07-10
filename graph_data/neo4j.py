@@ -50,8 +50,8 @@ Q_IN_CSV_CHARACTERISTICS = """
     LOAD CSV WITH HEADERS FROM 'file://{file}' AS line
     MERGE (s:Student {{idno:line.idno}})
     MERGE (ch:Characteristic {{id:line.type+':'+line.value}})
-    ON CREATE SET ch.type=line.type, ch.value=line.value
-      MERGE (s)-[:characteristic]->(ch)
+      ON CREATE SET ch.type=line.type, ch.value=line.value
+    MERGE (s)-[:characteristic]->(ch)
     """
 
 Q_IN_CSV_FRIENDS = """
