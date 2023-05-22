@@ -1,4 +1,4 @@
 click==4.0
 structlog==15.1.0
 fake-factory==0.5.3
-requests==2.20.0
+requests==2.31.0
